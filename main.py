@@ -57,6 +57,9 @@ def get_weather():
         print(f'end {year}')
         time.sleep(10)
 
+def push_weather():
+    pass
+
 def choiser():
     print('------------')
     print('"1316" get weather.')
@@ -69,7 +72,7 @@ def choiser():
             get_weather()
             break
         elif x == '3544':
-            # push_weather()
+            push_weather()
             break
         elif x == 'exit':
             exit()
