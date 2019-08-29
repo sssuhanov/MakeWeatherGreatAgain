@@ -48,7 +48,7 @@ def do_request(session, params):
         pass
     write_json(r.json(), params['year'])
 
-def main():
+def get_weather():
     for year in range(1937,2020):
         print(f'start {year}')
         session = do_session()
@@ -56,6 +56,28 @@ def main():
         do_request(session, params)
         print(f'end {year}')
         time.sleep(10)
+
+def choiser():
+    print('------------')
+    print('"1316" get weather.')
+    print('"3544" push weather to SQL.')
+    print('"exit" for exit.')
+    while True:
+        x = input('Your choice: ')
+        
+        if x == '1316':
+            get_weather()
+            break
+        elif x == '3544':
+            # push_weather()
+            break
+        elif x == 'exit':
+            exit()
+        else:
+            pass   
+
+def main():
+    choiser()
 
 if __name__ == "__main__":
     main()
