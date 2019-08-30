@@ -5,6 +5,7 @@ import os
 import time
 import sqlalchemy as db
 
+# Скрапинг
 
 def do_session():
     session = requests.session()
@@ -31,15 +32,6 @@ def get_params_for_req(year):
     
     return params
 
-def write_json(answ_json, year):
-    # Сохраняем json
-    dir_out = 'out'
-    if not os.path.exists(dir_out):
-        os.makedirs(dir_out)
-
-    with open(f'out/{year}.json', 'w') as write_file:
-        json.dump(answ_json, write_file, indent=2, ensure_ascii=False)
-
 def do_request(session, params):
     try:
         r = session.get(params['URL'], headers=params['headers'], params=params['parforget'])
@@ -58,11 +50,24 @@ def get_weather():
         print(f'end {year}')
         time.sleep(10)
 
+
+# Работа с файлами
+def write_json(answ_json, year):
+    # Сохраняем json
+    dir_out = 'out'
+    if not os.path.exists(dir_out):
+        os.makedirs(dir_out)
+
+    with open(f'out/{year}.json', 'w') as write_file:
+        json.dump(answ_json, write_file, indent=2, ensure_ascii=False)
+
 def read_json(file_adr):
     with open(f'out/{file_adr}', 'r') as f:
         data = json.load(f)
     return data
 
+
+# Работа с SQL
 def upload_sql(all_days_weather_list):
     # from sqlalchemy import create_engine
     engine = db.create_engine('postgresql://postgres:kilo98ui@localhost/weather')
@@ -74,7 +79,6 @@ def upload_sql(all_days_weather_list):
     query = db.insert(observ) 
     ResultProxy = connection.execute(query, all_days_weather_list)
     
-
 def read_weather_days(files_list):
     for json_file in files_list:
         # data_weather_day = read_weather_params(json_file)
@@ -112,7 +116,6 @@ def read_weather_days(files_list):
         else:
             print(f'{json_file} пустой, пропущен')
 
-
 def push_weather():
     # Получить список файлов в папке out
     files_list = os.listdir('out')
@@ -120,6 +123,8 @@ def push_weather():
     read_weather_days(files_list)
     pass
 
+
+# Меню программы
 def choiser():
     print('------------')
     print('"1316" get weather.')
