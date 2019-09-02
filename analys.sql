@@ -31,3 +31,12 @@ WHERE date_part('month', date) IN ('6','7','8')
       AND rain = 't'
 GROUP BY date_part('year', date)
 ORDER BY date_part('year', date);
+
+-- Количество теплых дней за лето
+SELECT date_part('year', date) as year,
+       count(*) as hot_days
+FROM observ
+WHERE date_part('month', date) IN ('6','7','8')
+      AND (temperature-32)*0.56::numeric(10,2) > 18
+GROUP BY date_part('year', date)
+ORDER BY date_part('year', date);
