@@ -50,6 +50,8 @@ def get_weather():
         print(f'end {year}')
         time.sleep(10)
 
+def get_weather_one_month():
+    pass
 
 # Работа с файлами
 def write_json(answ_json, year):
@@ -129,6 +131,7 @@ def choiser():
     print('------------')
     print('"1316" get weather.')
     print('"3544" push weather to SQL.')
+    print('"1552" get weather only one month with "month-year".')
     print('"exit" for exit.')
     while True:
         x = input('Your choice: ')
@@ -138,6 +141,9 @@ def choiser():
             break
         elif x == '3544':
             push_weather()
+            break
+        elif x == '1552':
+            get_weather_one_month()
             break
         elif x == 'exit':
             exit()
