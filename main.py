@@ -50,8 +50,28 @@ def get_weather():
         print(f'end {year}')
         time.sleep(10)
 
-def get_weather_one_month():
-    pass
+def get_weather_one_year():
+    # Определяем какой год будет обновляться
+    year = input('year for update: ')
+    try:
+        year = int(year)
+        if year < 1937 or year > 2019:
+            raise Exception("Год не попадает в возможные промежутки")
+    except Exception as e:
+        print(e)
+        exit()
+    
+    print(f'start {year}')
+
+    # Получаем данные по году
+    session = do_session()
+    params = get_params_for_req(year)
+    do_request(session, params)
+    
+    # Обновляем данные в SQL
+    read_weather_day(f'{year}.json')
+
+    print(f'end {year}')
 
 # Работа с файлами
 def write_json(answ_json, year):
@@ -71,59 +91,127 @@ def read_json(file_adr):
 
 # Работа с SQL
 def upload_sql(all_days_weather_list):
-    # from sqlalchemy import create_engine
+    # Подключаемся к базе и считываем данные
     engine = db.create_engine('postgresql://postgres:kilo98ui@localhost/weather')
     connection = engine.connect()
     metadata = db.MetaData()
     observ = db.Table('observ', metadata, autoload=True, autoload_with=engine)
 
-    #Inserting many records at ones
-    query = db.insert(observ) 
-    ResultProxy = connection.execute(query, all_days_weather_list)
+    # Формируем запрос для отправки данных
+    # query = db.sql.text(
+    #     "INSERT INTO observ (\
+    #         date,\
+    #         temperature,\
+    #         dewpoint,\
+    #         pressure,\
+    #         wind_speed,\
+    #         visibility,\
+    #         max_temperature,\
+    #         min_temperature,\
+    #         max_dewpoint,\
+    #         min_dewpoint,\
+    #         max_humidity,\
+    #         min_humidity,\
+    #         max_wind_speed,\
+    #         min_wind_speed,\
+    #         max_pressure,\
+    #         min_pressure,\
+    #         max_visibility,\
+    #         min_visibility,\
+    #         rain,\
+    #         snow,\
+    #         fog,\
+    #         hail,\
+    #         thunder,\
+    #         tornado,\
+    #         snowfall\
+    #         )\
+    #     VALUES (\
+    #         :date,\
+    #         :temperature,\
+    #         :dewpoint,\
+    #         :pressure,\
+    #         :wind_speed,\
+    #         :visibility,\
+    #         :max_temperature,\
+    #         :min_temperature,\
+    #         :max_dewpoint,\
+    #         :min_dewpoint,\
+    #         :max_humidity,\
+    #         :min_humidity,\
+    #         :max_wind_speed,\
+    #         :min_wind_speed,\
+    #         :max_pressure,\
+    #         :min_pressure,\
+    #         :max_visibility,\
+    #         :min_visibility,\
+    #         :rain,\
+    #         :snow,\
+    #         :fog,\
+    #         :hail,\
+    #         :thunder,\
+    #         :tornado,\
+    #         :snowfall\
+    #     )\
+    #     ON CONFLICT DO NOTHING"
+    # )
+
+    # for day_weather_list in all_days_weather_list:
+    #     result = connection.execute(query,**day_weather_list)
+
+    # Добавляем данные в базу
+    # query = db.insert(observ)
+    query = db.dialects.postgresql.insert(observ)
+    do_nothing_query = query.on_conflict_do_nothing()
+    ResultProxy = connection.execute(do_nothing_query, all_days_weather_list)
     
+def read_weather_day(json_file):
+    
+    weather = read_json(json_file)
+
+    all_days_weather_list = []
+
+    for weather_day in weather['history']['days']:
+        # Достаем из файла необходимые данные в удобном формате
+        data_weather_day = {}
+        # Дату
+        year = weather_day['summary']['date']['year']
+        month = weather_day['summary']['date']['month']
+        day = weather_day['summary']['date']['day']
+        data_weather_day['date'] = f'{year}-{month}-{day}'
+
+        # показатели погоды
+        list_of_params = ['temperature', 'dewpoint', 'pressure', 'wind_speed',
+                            'visibility', 'max_temperature', 'min_temperature',
+                            'max_dewpoint', 'min_dewpoint', 'max_humidity',
+                            'min_humidity', 'max_wind_speed', 'min_wind_speed',
+                            'max_pressure', 'min_pressure', 'max_visibility',
+                            'min_visibility', 'rain', 'snow', 'fog', 'hail',
+                            'thunder', 'tornado', 'snowfall']
+        
+        for param in list_of_params:
+            data_weather_day[param] = weather_day['summary'][param]
+        
+        all_days_weather_list.append(data_weather_day)
+
+    # Подключаемся к SQL и записываем данные
+    if len(all_days_weather_list) > 0:
+        upload_sql(all_days_weather_list)
+        print(f'{json_file} в базу записан')
+    else:
+        print(f'{json_file} пустой, пропущен')
+
 def read_weather_days(files_list):
     for json_file in files_list:
-        # data_weather_day = read_weather_params(json_file)
-        weather = read_json(json_file)
 
-        all_days_weather_list = []
-
-        for weather_day in weather['history']['days']:
-            # Достаем из файла необходимые данные в удобном формате
-            data_weather_day = {}
-            # Дату
-            year = weather_day['summary']['date']['year']
-            month = weather_day['summary']['date']['month']
-            day = weather_day['summary']['date']['day']
-            data_weather_day['date'] = f'{year}-{month}-{day}'
-
-            # показатели погоды
-            list_of_params = ['temperature', 'dewpoint', 'pressure', 'wind_speed',
-                                'visibility', 'max_temperature', 'min_temperature',
-                                'max_dewpoint', 'min_dewpoint', 'max_humidity',
-                                'min_humidity', 'max_wind_speed', 'min_wind_speed',
-                                'max_pressure', 'min_pressure', 'max_visibility',
-                                'min_visibility', 'rain', 'snow', 'fog', 'hail',
-                                'thunder', 'tornado', 'snowfall']
-            
-            for param in list_of_params:
-                data_weather_day[param] = weather_day['summary'][param]
-            
-            all_days_weather_list.append(data_weather_day)
-
-        # Подключаемся к SQL и записываем данные
-        if len(all_days_weather_list) > 0:
-            upload_sql(all_days_weather_list)
-            print(f'{json_file} в базу записан')
-        else:
-            print(f'{json_file} пустой, пропущен')
+        read_weather_day(json_file)
+        
 
 def push_weather():
     # Получить список файлов в папке out
     files_list = os.listdir('out')
     # Считываем JSON файл
     read_weather_days(files_list)
-    pass
 
 
 # Меню программы
@@ -131,7 +219,7 @@ def choiser():
     print('------------')
     print('"1316" get weather.')
     print('"3544" push weather to SQL.')
-    print('"1552" get weather only one month with "month-year".')
+    print('"1552" get weather only one year and insert if not exist.')
     print('"exit" for exit.')
     while True:
         x = input('Your choice: ')
@@ -143,7 +231,7 @@ def choiser():
             push_weather()
             break
         elif x == '1552':
-            get_weather_one_month()
+            get_weather_one_year()
             break
         elif x == 'exit':
             exit()
