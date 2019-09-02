@@ -97,72 +97,11 @@ def upload_sql(all_days_weather_list):
     metadata = db.MetaData()
     observ = db.Table('observ', metadata, autoload=True, autoload_with=engine)
 
-    # Формируем запрос для отправки данных
-    # query = db.sql.text(
-    #     "INSERT INTO observ (\
-    #         date,\
-    #         temperature,\
-    #         dewpoint,\
-    #         pressure,\
-    #         wind_speed,\
-    #         visibility,\
-    #         max_temperature,\
-    #         min_temperature,\
-    #         max_dewpoint,\
-    #         min_dewpoint,\
-    #         max_humidity,\
-    #         min_humidity,\
-    #         max_wind_speed,\
-    #         min_wind_speed,\
-    #         max_pressure,\
-    #         min_pressure,\
-    #         max_visibility,\
-    #         min_visibility,\
-    #         rain,\
-    #         snow,\
-    #         fog,\
-    #         hail,\
-    #         thunder,\
-    #         tornado,\
-    #         snowfall\
-    #         )\
-    #     VALUES (\
-    #         :date,\
-    #         :temperature,\
-    #         :dewpoint,\
-    #         :pressure,\
-    #         :wind_speed,\
-    #         :visibility,\
-    #         :max_temperature,\
-    #         :min_temperature,\
-    #         :max_dewpoint,\
-    #         :min_dewpoint,\
-    #         :max_humidity,\
-    #         :min_humidity,\
-    #         :max_wind_speed,\
-    #         :min_wind_speed,\
-    #         :max_pressure,\
-    #         :min_pressure,\
-    #         :max_visibility,\
-    #         :min_visibility,\
-    #         :rain,\
-    #         :snow,\
-    #         :fog,\
-    #         :hail,\
-    #         :thunder,\
-    #         :tornado,\
-    #         :snowfall\
-    #     )\
-    #     ON CONFLICT DO NOTHING"
-    # )
-
-    # for day_weather_list in all_days_weather_list:
-    #     result = connection.execute(query,**day_weather_list)
-
-    # Добавляем данные в базу
-    # query = db.insert(observ)
+    # Формируем запрос
     query = db.dialects.postgresql.insert(observ)
     do_nothing_query = query.on_conflict_do_nothing()
+
+    # Отправляем запрос к серверу
     ResultProxy = connection.execute(do_nothing_query, all_days_weather_list)
     
 def read_weather_day(json_file):
