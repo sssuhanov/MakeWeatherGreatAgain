@@ -64,7 +64,7 @@ ORDER BY date_part('year', date);
 SELECT date_part('year', date) as year,
        count(*) as days
 FROM observ
--- WHERE date_part('month', date) IN ('6','7','8')
+--WHERE date_part('month', date) IN ('6','7','8')
 GROUP BY date_part('year', date)
 ORDER BY date_part('year', date);
 
@@ -84,3 +84,8 @@ ALTER TABLE observ ADD PRIMARY KEY (date);
 
 -- Дней в таблице
 SELECT count(*) FROM observ;
+
+-- Погода за один конкретный день
+SELECT *
+FROM observ
+WHERE date = '2019-06-13'
