@@ -83,9 +83,22 @@ WHERE date >= '2019-06-01'
 ALTER TABLE observ ADD PRIMARY KEY (date);
 
 -- Дней в таблице
-SELECT count(*) FROM observ;
+SELECT count(*) FROM temperature;
 
 -- Погода за один конкретный день
 SELECT *
 FROM observ
 WHERE date = '2019-06-13'
+
+-- Количетсво дней по годам
+SELECT date_part('year', date) as year, count(*)
+FROM temperature
+GROUP BY date_part('year', date)
+ORDER BY date_part('year', date);
+
+-- Количество летних дней по годам
+SELECT date_part('year', date) as year, count(*)
+FROM temperature
+WHERE date_part ('month', date) IN ('6', '7', '8')
+GROUP BY date_part('year', date)
+ORDER BY date_part('year', date);

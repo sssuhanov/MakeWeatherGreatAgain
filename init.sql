@@ -26,3 +26,9 @@ CREATE TABLE observ
     tornado boolean,
     snowfall NUMERIC(6,2)
 );
+
+CREATE TABLE temperature
+(
+	date date NOT NULL PRIMARY KEY,
+    temperature NUMERIC(6,2)
+);
