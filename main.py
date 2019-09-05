@@ -5,8 +5,8 @@ import os
 import time
 import sqlalchemy as db
 
-# Скрапинг
 
+# Скрапинг
 def do_session():
     session = requests.session()
 
@@ -17,18 +17,29 @@ def do_session():
 
     return session
 
-def get_params_for_req(year):
+def month_str(month):
+    month = str(month)
+    if len(month) == 1:
+        month = ''.join(['0',month])
+    return month
+
+def get_params_for_req(year, month):
     params = {}
     # Подменяем headers
     params['headers'] = {}
     params['headers']['User-agent'] = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36'
 
-    date_start = f'{year}0101'
-    date_end = f'{year}1231'
+    if month == 12:
+        date_start = f'{year}{month_str(month)}01'
+        date_end = f'{year+1}0101'
+    else:
+        date_start = f'{year}{month_str(month)}01'
+        date_end = f'{year}{month_str(month+1)}01'
 
     params['URL']=f'https://api-ak.wunderground.com/api/75e91f5c866f39a2/history_{date_start}{date_end}/lang:EN/units:english/bestfct:1/v:2.0/q/UUWW.json'
     params['parforget'] = {'showObs': '0',  'ttl': '120'}
     params['year'] = year
+    params['month'] = month
     
     return params
 
@@ -39,16 +50,17 @@ def do_request(session, params):
         print(e)
     else:
         pass
-    write_json(r.json(), params['year'])
+    write_json(r.json(), f'{params["year"]}-{params["month"]}')
 
 def get_weather():
     for year in range(1937,2020):
-        print(f'start {year}')
-        session = do_session()
-        params = get_params_for_req(year)
-        do_request(session, params)
-        print(f'end {year}')
-        time.sleep(10)
+        for month in range(1, 13):
+            print(f'start {year}-{month}')
+            session = do_session()
+            params = get_params_for_req(year, month)
+            do_request(session, params)
+            print(f'end {year}-{month}')
+            time.sleep(10)
 
 def get_weather_one_year():
     # Определяем какой год будет обновляться
@@ -72,6 +84,7 @@ def get_weather_one_year():
     read_weather_day(f'{year}.json')
 
     print(f'end {year}')
+
 
 # Работа с файлами
 def write_json(answ_json, year):
@@ -144,7 +157,6 @@ def read_weather_days(files_list):
     for json_file in files_list:
 
         read_weather_day(json_file)
-        
 
 def push_weather():
     # Получить список файлов в папке out
