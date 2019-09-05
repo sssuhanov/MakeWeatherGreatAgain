@@ -5,10 +5,10 @@ from files import csv_to_list
 from sql import upload_sql
 
 def get_weather():
-    pass
+    scraping.get_weather()
 
 def get_weather_one_year():
-    pass
+    scraping.get_weather_one_year()
 
 def push_weather():
     # Получить список файлов в папке out
